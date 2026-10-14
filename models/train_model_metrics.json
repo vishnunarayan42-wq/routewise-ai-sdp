@@ -1,0 +1,11 @@
+{
+    "training_rows": 30569,
+    "testing_rows": 10672,
+    "test_start_date": "2025-09-02",
+    "mae_minutes": 23.008,
+    "rmse_minutes": 41.16,
+    "r2": 0.172,
+    "baseline_mae_minutes": 26.05,
+    "trains": 6,
+    "stations": 10
+}
