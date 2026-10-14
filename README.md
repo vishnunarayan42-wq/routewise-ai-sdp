@@ -164,15 +164,30 @@ Visit `http://localhost:8501` to access the live app.
 
 ## ☁️ Cloud Deployment Options
 
-### Option 1: Streamlit Community Cloud (Recommended & Free)
+### Option 1: Vercel (1-Click Serverless Python + Edge Frontend)
+RouteWise AI includes native Vercel support with a serverless Flask backend (`api/index.py`), preconfigured `vercel.json`, and responsive HTML5/JS single-page web app in `public/`:
+1. Push this repository to your GitHub account (`https://github.com/vishnunarayan42-wq/routewise-ai-sdp`).
+2. Go to [vercel.com](https://vercel.com/) and click **Add New... ➔ Project**.
+3. Import your GitHub repository `routewise-ai-sdp`.
+4. Framework Preset: **Other** (Vercel automatically detects `vercel.json` and Python runtime).
+5. Click **Deploy**!
+   Your app will be live at `https://routewise-ai-sdp.vercel.app/`.
+
+Alternatively via Vercel CLI:
+```bash
+npm i -g vercel
+vercel deploy --prod
+```
+
+### Option 2: Streamlit Community Cloud (Recommended for Streamlit UI)
 1. Fork or push this repository to your GitHub account (`https://github.com/vishnunarayan42-wq/routewise-ai-sdp`).
 2. Visit [share.streamlit.io](https://share.streamlit.io/) and click **New App**.
 3. Select your repository: `vishnunarayan42-wq/routewise-ai-sdp`.
 4. Set Main file path to `app.py`.
 5. Click **Deploy!**
 
-### Option 2: Render / Railway
-- Connect this GitHub repository to [Render](https://render.com/).
+### Option 3: Render / Railway / Docker
+- Connect this GitHub repository to [Render](https://render.com/) or [Railway](https://railway.app/).
 - Choose **Web Service**, runtime: **Python 3**.
 - Build command: `pip install -r requirements.txt`.
 - Start command: `streamlit run app.py --server.port=$PORT --server.address=0.0.0.0`.

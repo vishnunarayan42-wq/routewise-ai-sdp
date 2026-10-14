@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RouteWise AI • Multi-Modal Transit ETA & Route Optimization</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #028090;
+      --primary-hover: #006573;
+      --accent: #00a896;
+      --navy: #0d253f;
+      --text: #16324f;
+      --text-muted: #64748b;
+      --bg: #f4f7fc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --success: #0e8a4a;
+      --success-bg: #e6f7ed;
+      --warning: #b26a00;
+      --warning-bg: #fff8e6;
+      --danger: #cf222e;
+      --danger-bg: #ffebe9;
+      --radius: 14px;
+      --shadow: 0 4px 14px rgba(13, 37, 63, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 24px 16px 48px;
+    }
+
+    .container {
+      max-width: 1140px;
+      margin: 0 auto;
+    }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, #0d253f, #134e5e, #1a7a8a);
+      color: #fff;
+      padding: 36px 32px;
+      border-radius: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 30px rgba(13, 37, 63, 0.15);
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(8px);
+      color: #9fe2ec;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .hero h1 {
+      font-size: clamp(28px, 4.5vw, 40px);
+      font-weight: 800;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hero p {
+      color: #e3f5f8;
+      font-size: 16px;
+      max-width: 800px;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 4px;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      padding: 10px 18px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      color: var(--primary);
+      background: rgba(2, 128, 144, 0.06);
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      border-bottom: 3px solid var(--primary);
+    }
+
+    .tab-pane {
+      display: none;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    /* Card */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 24px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--navy);
+    }
+
+    .card-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    /* Form controls */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--navy);
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(2, 128, 144, 0.12);
+    }
+
+    /* Presets */
+    .presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    .preset-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .preset-chip {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--navy);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .preset-chip:hover {
+      background: #e2e8f0;
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* Mode selector */
+    .mode-radios {
+      display: flex;
+      gap: 16px;
+      margin: 16px 0;
+      flex-wrap: wrap;
+    }
+
+    .mode-radio {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      background: linear-gradient(90deg, #028090, #00a896);
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      transition: opacity 0.2s;
+      box-shadow: 0 4px 12px rgba(2, 128, 144, 0.2);
+    }
+
+    .btn-primary:hover {
+      opacity: 0.95;
+    }
+
+    .btn-primary:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Results */
+    .results-area {
+      margin-top: 24px;
+      display: none;
+    }
+
+    .recommendation-banner {
+      background: #e6f7ed;
+      border: 1px solid #a3e635;
+      border-left: 6px solid var(--success);
+      padding: 16px 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .recommendation-banner h3 {
+      color: var(--success);
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .journey-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .journey-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    }
+
+    .journey-card.recommended {
+      border: 2px solid var(--accent);
+      background: #fbfdfd;
+    }
+
+    .journey-info h4 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .journey-info p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .journey-eta {
+      text-align: right;
+    }
+
+    .journey-time {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--navy);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 14px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .badge-success { background: var(--success-bg); color: var(--success); }
+    .badge-warning { background: var(--warning-bg); color: var(--warning); }
+    .badge-danger { background: var(--danger-bg); color: var(--danger); }
+
+    /* Metric box */
+    .metric-box {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--navy);
+      margin: 6px 0;
+    }
+
+    .metric-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Spinner */
+    .spinner {
+      display: none;
+      text-align: center;
+      padding: 30px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      margin-top: 48px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-badge">Intelligent Mobility • Kochi & Kerala Transit</div>
+    <h1>🚌 RouteWise AI</h1>
+    <p>AI-powered multi-modal transit engine comparing Kochi Buses and Kochi Metro with Machine Learning ETA predictions and Kerala railway delay forecasting.</p>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('planner')">🚌 🚇 Kochi Journey Planner</button>
+    <button class="tab-btn" onclick="switchTab('trains')">🚆 Kerala Train Delays</button>
+    <button class="tab-btn" onclick="switchTab('analytics')">📊 Model Analytics</button>
+    <button class="tab-btn" onclick="switchTab('about')">ℹ️ About RouteWise</button>
+  </div>
+
+  <!-- TAB 1: KOCHI JOURNEY PLANNER -->
+  <div id="tab-planner" class="tab-pane active">
+    <div class="card">
+      <div class="card-title">📍 Plan Your Journey in Kochi</div>
+      <div class="card-subtitle">Search bus routes and metro schedules with ML-predicted travel times and deadline checks.</div>
+
+      <!-- Quick presets -->
+      <div class="presets">
+        <span class="preset-label">Quick Select:</span>
+        <button class="preset-chip" onclick="setStops('Aluva', 'Edapally')">Aluva ➔ Edapally</button>
+        <button class="preset-chip" onclick="setStops('Kalamassery', 'M.G Road')">Kalamassery ➔ MG Road</button>
+        <button class="preset-chip" onclick="setStops('Kaloor', 'Vyttila')">Kaloor ➔ Vyttila</button>
+        <button class="preset-chip" onclick="setStops('Edapally', 'Maharaja\'s College')">Edapally ➔ Maharajas</button>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label for="srcInput">Starting Stop / Station (From)</label>
+          <input list="stopsList" id="srcInput" placeholder="Type or select starting stop...">
+        </div>
+        <div class="form-group">
+          <label for="dstInput">Destination Stop / Station (To)</label>
+          <input list="stopsList" id="dstInput" placeholder="Type or select destination stop...">
+        </div>
+      </div>
+      <datalist id="stopsList"></datalist>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label>🕒 Departure Time</label>
+          <div class="grid-3">
+            <select id="depHour">
+              <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+              <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+              <option value="7">7</option><option value="8" selected>8</option><option value="9">9</option>
+              <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+            </select>
+            <select id="depMin">
+              <option value="0">00</option><option value="15">15</option>
+              <option value="30" selected>30</option><option value="45">45</option>
+            </select>
+            <select id="depAmpm">
+              <option value="AM" selected>AM</option><option value="PM">PM</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>⏰ Required Arrival Deadline</label>
+          <div class="grid-3">
+            <select id="dlHour">
+              <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+              <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+              <option value="7">7</option><option value="8">8</option><option value="9" selected>9</option>
+              <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+            </select>
+            <select id="dlMin">
+              <option value="0">00</option><option value="15">15</option>
+              <option value="30" selected>30</option><option value="45">45</option>
+            </select>
+            <select id="dlAmpm">
+              <option value="AM" selected>AM</option><option value="PM">PM</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="mode-radios">
+        <label class="mode-radio"><input type="radio" name="modeFilter" value="All" checked> All Modes (Compare Bus & Metro)</label>
+        <label class="mode-radio"><input type="radio" name="modeFilter" value="Bus"> 🚌 Bus Only</label>
+        <label class="mode-radio"><input type="radio" name="modeFilter" value="Metro"> 🚇 Metro Only</label>
+      </div>
+
+      <button class="btn-primary" id="btnSearch" onclick="runRouteSearch()">🔎 Find Best Routes & Compare ETA</button>
+    </div>
+
+    <!-- Spinner -->
+    <div id="plannerSpinner" class="spinner">⏳ Analyzing bus segments with XGBoost model and calculating metro schedules...</div>
+
+    <!-- Results Area -->
+    <div id="resultsArea" class="results-area">
+      <div id="recBanner" class="recommendation-banner" style="display:none;"></div>
+      <div id="journeysList"></div>
+    </div>
+  </div>
+
+  <!-- TAB 2: KERALA TRAIN DELAYS -->
+  <div id="tab-trains" class="tab-pane">
+    <div class="card">
+      <div class="card-title">🚆 Kerala Train Delay & ETA Predictor</div>
+      <div class="card-subtitle">Estimate train delays across major Kerala railway stations using our trained Random Forest pipeline.</div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label for="trainSelect">Select Train</label>
+          <select id="trainSelect">
+            <option value="12623">12623 • MAS TVC SF Mail (Chennai → Thiruvananthapuram)</option>
+            <option value="12624">12624 • TVC MAS SF Mail (Thiruvananthapuram → Chennai)</option>
+            <option value="16345">16345 • Netravati Express (LTT Mumbai → Thiruvananthapuram)</option>
+            <option value="16346">16346 • Netravati Express (Thiruvananthapuram → LTT Mumbai)</option>
+            <option value="16629">16629 • Malabar Express (Mangaluru → Thiruvananthapuram)</option>
+            <option value="16630">16630 • Malabar Express (Thiruvananthapuram → Mangaluru)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="stationSelect">Kerala Station</label>
+          <select id="stationSelect" onchange="updateStationDefaults()">
+            <option value="TVC">TVC — Thiruvananthapuram Central</option>
+            <option value="QLN">QLN — Kollam Junction</option>
+            <option value="ALLP">ALLP — Alappuzha</option>
+            <option value="KTYM">KTYM — Kottayam</option>
+            <option value="ERS" selected>ERS — Ernakulam Junction (South)</option>
+            <option value="ERN">ERN — Ernakulam Town (North)</option>
+            <option value="TCR">TCR — Thrissur</option>
+            <option value="PGT">PGT — Palakkad Junction</option>
+            <option value="CLT">CLT — Kozhikode Main</option>
+            <option value="CAN">CAN — Kannur</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Scheduled Arrival Time</label>
+          <div class="grid-2">
+            <input type="time" id="trainSchedTime" value="12:00">
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Station Sequence</label>
+            <input type="number" id="trainSeq" value="21" min="1" max="150">
+          </div>
+          <div class="form-group">
+            <label>Distance (km)</label>
+            <input type="number" id="trainDist" value="700" min="0" max="4000">
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btnPredictTrain" onclick="runTrainPrediction()">⚡ Predict Train Delay & ETA</button>
+    </div>
+
+    <div id="trainSpinner" class="spinner">⏳ Querying Random Forest model...</div>
+
+    <div id="trainResultArea" class="results-area">
+      <div class="grid-4" id="trainMetricsGrid"></div>
+      <div id="trainAlertBox" style="margin-top:16px;"></div>
+    </div>
+  </div>
+
+  <!-- TAB 3: MODEL ANALYTICS -->
+  <div id="tab-analytics" class="tab-pane">
+    <div class="card">
+      <div class="card-title">📊 Machine Learning Evaluation & Analytics</div>
+      <div class="card-subtitle">Quantifiable performance metrics across RouteWise AI regression models.</div>
+
+      <div class="grid-2">
+        <div class="card" style="box-shadow:none;">
+          <h3 style="margin-bottom:8px; color:var(--navy);">🚌 Bus Travel-Time Model (XGBoost)</h3>
+          <p style="font-size:14px; color:var(--text-muted); margin-bottom:16px;">Predicts continuous travel time per segment using gradient-boosted decision trees.</p>
+          <div class="grid-3">
+            <div class="metric-box">
+              <div class="metric-label">MAE</div>
+              <div class="metric-value">0.35m</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-label">RMSE</div>
+              <div class="metric-value">0.54m</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-label">R² Score</div>
+              <div class="metric-value">0.512</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="box-shadow:none;">
+          <h3 style="margin-bottom:8px; color:var(--navy);">🚆 Train Delay Model (Random Forest)</h3>
+          <p style="font-size:14px; color:var(--text-muted); margin-bottom:16px;">Predicts arrival delay across 10 Kerala stations trained on 41k+ historical records.</p>
+          <div class="grid-3">
+            <div class="metric-box">
+              <div class="metric-label">Model MAE</div>
+              <div class="metric-value">23.0m</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-label">Baseline MAE</div>
+              <div class="metric-value">26.1m</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-label">R² Score</div>
+              <div class="metric-value">0.172</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin:20px 0 12px; color:var(--navy);">🗄️ Transit Dataset Scale</h3>
+      <div class="grid-4">
+        <div class="metric-box">
+          <div class="metric-label">Kochi Bus Routes</div>
+          <div class="metric-value">465</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Trained Segments</div>
+          <div class="metric-value">45,621</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Metro Stations</div>
+          <div class="metric-value">25</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Train Records</div>
+          <div class="metric-value">41,304</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: ABOUT -->
+  <div id="tab-about" class="tab-pane">
+    <div class="card">
+      <div class="card-title">ℹ️ About RouteWise AI</div>
+      <div class="card-subtitle">Academic Machine Learning Project • Department of Electrical & Electronics Engineering</div>
+
+      <div style="font-size:15px; color:var(--text); line-height:1.7;">
+        <h4 style="color:var(--navy); margin: 14px 0 6px;">🎯 Problem Statement</h4>
+        <p>Commuters navigating cities with multiple transport options often face severe uncertainty regarding actual arrival times. Standard timetables ignore rush hours and bottlenecks, while passengers frequently have tight deadlines (e.g. reaching the airport by 6 PM). RouteWise AI predicts actual travel times using machine learning and recommends the optimal route meeting strict deadlines.</p>
+
+        <h4 style="color:var(--navy); margin: 18px 0 6px;">⚙️ Key Methodologies</h4>
+        <ul style="padding-left: 20px;">
+          <li><strong>GTFS Processing:</strong> Ingestion of General Transit Feed Specification datasets for Kochi Buses and Kochi Metro.</li>
+          <li><strong>XGBoost Regression:</strong> Predicts segment travel duration using spatial coordinates, sequences, and departure times.</li>
+          <li><strong>Random Forest Pipeline:</strong> Preprocessed train logs predicting arrival delays in minutes with one-hot encoding.</li>
+          <li><strong>Multi-Modal Comparison:</strong> Direct side-by-side evaluation of bus vs metro journey duration and deadline reachability.</li>
+        </ul>
+
+        <h4 style="color:var(--navy); margin: 18px 0 6px;">👥 Project Contributors</h4>
+        <p><strong>Vishnu Narayan A B</strong> (Roll No. 61)<br><strong>Vivek Noorudheen</strong> (Roll No. 62)<br><em>B.Tech Electrical & Electronics Engineering (EEE)</em></p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    RouteWise AI • Multi-Modal Transit ETA Prediction & Route Optimization<br>
+    Developed by Vishnu Narayan A B & Vivek Noorudheen | B.Tech EEE
+  </footer>
+</div>
+
+<script>
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('tab-' + tabId).classList.add('active');
+  }
+
+  function setStops(src, dst) {
+    document.getElementById('srcInput').value = src;
+    document.getElementById('dstInput').value = dst;
+  }
+
+  const stationMeta = {
+    'TVC': { seq: 32, dist: 920.0 },
+    'QLN': { seq: 28, dist: 855.0 },
+    'ALLP': { seq: 24, dist: 770.0 },
+    'KTYM': { seq: 23, dist: 760.0 },
+    'ERS': { seq: 21, dist: 700.0 },
+    'ERN': { seq: 20, dist: 698.0 },
+    'TCR': { seq: 17, dist: 625.0 },
+    'PGT': { seq: 14, dist: 550.0 },
+    'CLT': { seq: 10, dist: 435.0 },
+    'CAN': { seq: 6, dist: 345.0 }
+  };
+
+  function updateStationDefaults() {
+    const code = document.getElementById('stationSelect').value;
+    const meta = stationMeta[code] || { seq: 15, dist: 500 };
+    document.getElementById('trainSeq').value = meta.seq;
+    document.getElementById('trainDist').value = meta.dist;
+  }
+
+  // Load stops for autocomplete
+  async function loadStops() {
+    try {
+      const res = await fetch('/api/stops');
+      const data = await res.json();
+      const list = document.getElementById('stopsList');
+      list.innerHTML = '';
+      (data.stops || []).forEach(stop => {
+        const opt = document.createElement('option');
+        opt.value = stop;
+        list.appendChild(opt);
+      });
+    } catch(err) {
+      console.warn('Could not load stops:', err);
+    }
+  }
+  loadStops();
+
+  // Run Route Search
+  async function runRouteSearch() {
+    const src = document.getElementById('srcInput').value.trim();
+    const dst = document.getElementById('dstInput').value.trim();
+
+    if(!src || !dst) {
+      alert('Please enter both starting stop and destination.');
+      return;
+    }
+
+    const depHour = parseInt(document.getElementById('depHour').value);
+    const depMin = parseInt(document.getElementById('depMin').value);
+    const depAmpm = document.getElementById('depAmpm').value;
+
+    const dlHour = parseInt(document.getElementById('dlHour').value);
+    const dlMin = parseInt(document.getElementById('dlMin').value);
+    const dlAmpm = document.getElementById('dlAmpm').value;
+
+    const mode = document.querySelector('input[name="modeFilter"]:checked').value;
+
+    const spinner = document.getElementById('plannerSpinner');
+    const resultsArea = document.getElementById('resultsArea');
+    const btn = document.getElementById('btnSearch');
+
+    spinner.style.display = 'block';
+    resultsArea.style.display = 'none';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch('/api/plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          source: src,
+          destination: dst,
+          departure_hour: depHour,
+          departure_minute: depMin,
+          departure_period: depAmpm,
+          deadline_hour: dlHour,
+          deadline_minute: dlMin,
+          deadline_period: dlAmpm,
+          mode_filter: mode
+        })
+      });
+
+      const data = await res.json();
+      spinner.style.display = 'none';
+      btn.disabled = false;
+      resultsArea.style.display = 'block';
+
+      if(data.error) {
+        alert(data.error);
+        return;
+      }
+
+      const recBanner = document.getElementById('recBanner');
+      if(data.recommended) {
+        const r = data.recommended;
+        recBanner.style.display = 'block';
+        recBanner.innerHTML = `<h3>⭐ Recommended Best Option: ${r.mode} — ${r.route_name}</h3>
+          <p>Departs at <strong>${r.departure_time}</strong>, arrives at <strong>${r.arrival_time}</strong> (${r.travel_minutes} mins). Meets your ${data.deadline} deadline!</p>`;
+      } else {
+        recBanner.style.display = 'block';
+        recBanner.style.background = '#fff8e6';
+        recBanner.style.borderLeftColor = '#b26a00';
+        recBanner.innerHTML = `<h3>⚠️ Deadline Notice</h3>
+          <p>No available scheduled options are predicted to arrive before your deadline (${data.deadline}). Consider departing earlier.</p>`;
+      }
+
+      const list = document.getElementById('journeysList');
+      list.innerHTML = '';
+
+      if(!data.journeys || data.journeys.length === 0) {
+        list.innerHTML = `<div class="card" style="text-align:center; color:var(--text-muted);">
+          No direct services found connecting <strong>${src}</strong> to <strong>${dst}</strong> at or after selected departure time. Try selecting major hubs like Aluva, Edapally, or MG Road.
+        </div>`;
+        return;
+      }
+
+      data.journeys.forEach(j => {
+        const isRec = data.recommended && data.recommended.trip_id === j.trip_id && data.recommended.departure_time === j.departure_time;
+        const icon = j.mode === 'Bus' ? '🚌' : '🚇';
+        const badgeClass = j.before_deadline ? 'badge-success' : 'badge-warning';
+        const badgeText = j.before_deadline ? '✓ Meets Deadline' : 'Late Arrival';
+
+        const card = document.createElement('div');
+        card.className = 'journey-card' + (isRec ? ' recommended' : '');
+        card.innerHTML = `
+          <div class="journey-info">
+            <h4>${icon} ${j.mode}: ${j.route_name} ${isRec ? '<span class="badge badge-success">⭐ Top Choice</span>' : ''}</h4>
+            <p>Departure: <strong>${j.departure_time}</strong> ➔ Arrival: <strong>${j.arrival_time}</strong> • Duration: <strong>${j.travel_minutes} min</strong></p>
+            <p style="font-size:12px; color:var(--text-muted);">Basis: ${j.basis}</p>
+          </div>
+          <div class="journey-eta">
+            <div class="journey-time">${j.arrival_time}</div>
+            <span class="badge ${badgeClass}">${badgeText}</span>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+
+    } catch(err) {
+      spinner.style.display = 'none';
+      btn.disabled = false;
+      alert('Error fetching route plan: ' + err.message);
+    }
+  }
+
+  // Run Train Delay Prediction
+  async function runTrainPrediction() {
+    const trainNo = document.getElementById('trainSelect').value;
+    const station = document.getElementById('stationSelect').value;
+    const timeVal = document.getElementById('trainSchedTime').value;
+    const [h, m] = timeVal.split(':').map(Number);
+    const seq = parseInt(document.getElementById('trainSeq').value);
+    const dist = parseFloat(document.getElementById('trainDist').value);
+
+    const spinner = document.getElementById('trainSpinner');
+    const resArea = document.getElementById('trainResultArea');
+    const btn = document.getElementById('btnPredictTrain');
+
+    spinner.style.display = 'block';
+    resArea.style.display = 'none';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch('/api/predict-train', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          train_no: trainNo,
+          station_code: station,
+          scheduled_hour: h,
+          scheduled_minute: m,
+          sequence: seq,
+          distance_km: dist
+        })
+      });
+
+      const data = await res.json();
+      spinner.style.display = 'none';
+      btn.disabled = false;
+      resArea.style.display = 'block';
+
+      if(data.error) {
+        alert(data.error);
+        return;
+      }
+
+      const grid = document.getElementById('trainMetricsGrid');
+      grid.innerHTML = `
+        <div class="metric-box">
+          <div class="metric-label">Scheduled Arrival</div>
+          <div class="metric-value" style="font-size:22px;">${data.scheduled_time}</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Predicted Delay</div>
+          <div class="metric-value" style="font-size:22px; color:${data.predicted_delay_min > 15 ? 'var(--danger)' : 'var(--navy)'};">
+            ${data.predicted_delay_min > 0 ? '+' : ''}${data.predicted_delay_min} min
+          </div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Estimated Arrival</div>
+          <div class="metric-value" style="font-size:22px; color:var(--primary);">${data.estimated_time}</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Risk Category</div>
+          <div class="metric-value" style="font-size:16px;">${data.risk_status}</div>
+        </div>
+      `;
+
+      const alertBox = document.getElementById('trainAlertBox');
+      const alertClass = data.alert_level === 'danger' ? 'var(--danger-bg)' : (data.alert_level === 'warning' ? 'var(--warning-bg)' : 'var(--success-bg)');
+      const textClass = data.alert_level === 'danger' ? 'var(--danger)' : (data.alert_level === 'warning' ? 'var(--warning)' : 'var(--success)');
+      
+      alertBox.innerHTML = `
+        <div style="background:${alertClass}; color:${textClass}; padding:14px 18px; border-radius:10px; font-weight:600; font-size:14px;">
+          ${data.predicted_delay_min > 15 
+            ? `⚠️ Train ${data.train_no} is expected to run approx. ${data.predicted_delay_min} minutes behind schedule at ${data.station_code}. Plan connecting commutes accordingly.` 
+            : `✅ Train ${data.train_no} is expected to arrive close to timetable (${data.predicted_delay_min} min delay).`}
+        </div>
+      `;
+
+    } catch(err) {
+      spinner.style.display = 'none';
+      btn.disabled = false;
+      alert('Error predicting train delay: ' + err.message);
+    }
+  }
+</script>
+</body>
+</html>
